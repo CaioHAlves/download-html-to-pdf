@@ -1,31 +1,59 @@
-// HTML que você deseja baixar
-var htmlContent = document.getElementById("list");
+let htmlContent = document.getElementById("list");
+let btnDownloadHtml = document.getElementById("btnDownloadHtml");
+let btnDownloadWithCss = document.getElementById("btnDownloadWithCss");
 
-// Crie um Blob (Binary Large Object) com o conteúdo HTML
-var blob = new Blob([htmlContent], { type: "text/html" });
+let blob = new Blob([htmlContent], { type: "text/html" });
+let url = window.URL.createObjectURL(blob);
+const CSS = `
+.title {
+  color: red;
+}
+`
 
-// Crie uma URL para o Blob
-var url = window.URL.createObjectURL(blob);
-
-// Configure o link para apontar para a URL do Blob
-var downloadLink = document.getElementById("downloadLink");
 
 function download() {
-  downloadLink.href = url;
+  btnDownloadHtml.href = url;
 
-  // Defina o nome do arquivo para o download
-  downloadLink.download = "meu_arquivo.html";
+  btnDownloadHtml.download = "meu_arquivo.html";
 
-  // Simule um clique no link para iniciar o download
-  // downloadLink.click();
   const newWindow = window.open('about:blank')
 
   newWindow.document.write(htmlContent.innerHTML)
   newWindow.print()
   newWindow.close()
 
-  // Libere a URL do Blob após o download
   window.URL.revokeObjectURL(url);
 }
 
-downloadLink.addEventListener("click", download)
+const generate = async (data, title) => {
+  await data
+  return `
+  <html>
+    <head>
+      <title>${title}</title>
+      <meta charset="utf-8" />
+    </head>
+    <body>
+      <style>
+      ${CSS}
+      </style>
+      ${(data?.innerHTML ?? 'Não foi possivel gerar o relatório!')}
+      </body>
+  </html>
+`
+}
+
+const downloadWithCss = () => {
+  const newWindow = window.open('about:blank')
+  generate(htmlContent, "Teste")
+    .then(response => {
+      newWindow.document.write(response)
+      newWindow.print()
+      newWindow.close()
+    })
+    .catch(error => alert(`Erro: ${error}`))
+
+}
+
+btnDownloadHtml.addEventListener("click", download)
+btnDownloadWithCss.addEventListener("click", downloadWithCss)
